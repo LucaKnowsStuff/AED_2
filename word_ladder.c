@@ -287,13 +287,10 @@ static hash_table_node_t *find_word(hash_table_t *hash_table,const char *word,in
 static hash_table_node_t *find_representative(hash_table_node_t *node)
 {
   hash_table_node_t *representative,*next_node;
-  representative = node;
-  while (representative != representative->representative)
-  {
-    representative = representative->representative;
-  }
-  //Could not do path compression optimization
 
+   for(representative = node; representative != representative->representative; representative = representative->representative)
+    ;
+  
   return representative;
 }
   
@@ -303,7 +300,7 @@ static hash_table_node_t *find_representative(hash_table_node_t *node)
 static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char *word)
 {
   hash_table_node_t *to,*from_representative,*to_representative;
-  adjacency_node_t *link;
+  adjacency_node_t *link,*linkop;
 
   to = find_word(hash_table,word,0);
   from_representative = find_representative(from); //get the from representative
@@ -335,7 +332,12 @@ static void add_edge(hash_table_t *hash_table,hash_table_node_t *from,const char
 
 
   link = allocate_adjacency_node();
+  linkop = allocate_adjacency_node();
 
+
+  linkop->vertex = from;
+  linkop->next = to->head;
+  to->head = linkop;
 
   link->vertex = to;
   link->next = from->head;
